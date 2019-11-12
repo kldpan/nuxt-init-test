@@ -1,0 +1,108 @@
+nuxt笔记（结合课件中的nuxt.md文件使用）
+    一、nuxt基础：
+    1.Nuxt.js是基于vue.js的一种通用应用框架，语法和使用基本和vue.js相同，相关的配置、路由跳转等不同。
+    2.客户端渲染：利用ajax等数据交互手段获取服务端数据后，再由浏览器渲染到页面中，服务器压力低，不利于SEO优化（SEO即Search Engine Optimization搜索引擎优化）
+    3.服务端渲染：网站在服务器中运行，然后返回一个完整的html页面，然后响应内容输出给浏览器，浏览器会接收到一个渲染完毕的静态page页面，不需要客户端渲染，渲染速度快，且有利于搜索引擎抓取页面内容（服务端渲染实质是本地搭建的node环境渲染，并非远程服务器自身渲染）
+    4.nuxt.js和vue.js针对开发需求不同来使用
+        4.1若开发的项目是新闻网、论坛等依赖搜索引擎较强的网页用nuxt.js有利于SEO，引流效果更佳。乳沟
+        4.2若开发的项目是电商网站等依赖逻辑实现的网页，用vue.js可以将渲染页面和处理js逻辑放在客户端浏览器，降低服务器压力
+    二、nuxt安装：
+    （官网：https://zh.nuxtjs.org/guide/installation）
+    1.全局安装nuxt：gitBash下cnpm i -g create-nuxt-app创建(create-nuxt-app -v测试安装版本)
+    2.创建nuxt项目：create-nuxt-app 项目名（此时会出现选择相关的配置，如果出现不能通过上下键选择选项的情况，用cmd创建项目）
+    3.选择配置：
+        名字、描述和作者默认
+        包管理选Npm
+        后面分别配iView，express，axios,none
+        mode选Universal(ssr即服务端渲染)（构建时选择mode:'Universal'即选择了ssr服务端渲染，选择了mode:'spa'即选择了spa客户端渲染）
+        jsconfig.json默认
+    4.项目出现后，进入根目录cnpm i下载模块,cnpm run dev运行（根据运行后的端口号打开本地项目）
+    三、nuxt的运用：
+    1.了解项目目录
+        1.1 pages用来写路由跳转页面，自动设置跳转
+            1.Nuxt.js 的路由是根据pages目录结构自动生成
+            2.浏览器输入/时，默认找到pages文件夹，并自定义加载index.vue
+            3.pages内有user.vue，浏览器输入user时默认找到pages/user/index.vue
+        1.2 layouts/default.vue这个页面是主布局页面（入口页），相当于vue.js中的APP.vue，<nuxt/>路由显示位置，相当于<router-view/>
+        1.3 components用来放通用组件
+        1.4 plugins用来引入插件，自定义计算模块，js模块执行，没有暴露
+    2.nuxt配置文件nuxt.config.js中
+        1.mode:'universal'即选择了Universal即选了服务端渲染ssr
+        2.head内像html结构一样可放title,meta,link,script
+        3.plugins内写入插件
+            3.1 '~' 号代表当前根目录
+            3.2 plugins内每个插件都配置了ssr：false,目的是启动时执行自动build,属于服务端渲染是没有window,设置启动不加载
+            3.3先配apis.js代理插件,再配响应式rem布局插件,最后配全局组件通信插件store.js插件
+        4.modules内配置局部scss'@nuxtjs/style-resources'
+        5.全局配置styleResources:{scss:'./assets/index.scss'}
+    3.配置nuxt的vuex，配置前先cnpm i store -S下载store插件(在store中分被创建state.js/mutations.js/getters.js/actions.js)
+        1.store.js
+        export default ()=>({
+            // 内部写全局变量
+            uname:'Temping'
+        })
+        2.mutations.js
+        export default {
+            // 内部写处理state中的全局变量的方法
+            add(state){
+                console.log(state);
+            }
+        }
+        3.getters.js
+        export default {
+            count(state){
+                console.log("run");
+                return state.num;
+            }
+        }
+        4.actions.js
+        export default {
+            getTest(context){
+                console.log(context);
+            }
+        }
+    4.修改端口
+    在package.json内添加
+    "config": {
+        "nuxt": {
+            "host": "0.0.0.0",
+            "port": "3333"
+        }
+    }
+    5.配置局部和全局SCSS
+        1.先安装模块cnpm i node-sass@4.13.0 sass-loader@7.0.0 @nuxtjs/style-resources@1.0.0 -D
+        2.nuxt.config.js内的modules内配置，并在pages内的组件内测试局部scss和assets内的css内测试全局scss
+    6.引入插件v-console
+    在nuxt.config.js的head内添加script配置
+    script: [
+        {
+            src: './js/vconsole.min.js',
+        },
+        // 可以写入 js代码
+        {innerHTML: 'new VConsole()',  type: 'text/javascript'}
+    ]
+    7.配置代理（在nuxt.config.js中配置）
+    proxy: {
+        '/bsk': {
+            target: 'http://m.bestcake.com', // 代理地址
+            changeOrigin: true,
+            pathRewrite: {
+                '^/bsk': '', //将 /api 替换掉
+            }
+       }
+    }
+    8.写接口
+    在根目录中创建core/api/apis.js，写接口
+        import Vue from "vue"
+        import axios from "axios"
+        class Apis  {
+            getTestData(){
+                axios({
+                    method:"GET",
+                    url:"/json1811.ashx?v=1572782189825"
+                }).then((res)=>{
+                    console.log(res);
+                })
+            }    
+        }
+        Vue.prototype.$apis=new Apis();
